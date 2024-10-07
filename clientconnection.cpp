@@ -52,6 +52,7 @@ void ClientConnection::reayRead()
                 {
                     m_state = ConnectionState::Response;
                     sendResponse();
+                    return;
                 }
             }
 
@@ -60,6 +61,7 @@ void ClientConnection::reayRead()
             if (!match.hasMatch())
             {
                 qWarning() << "Could not parse header:" << line;
+                deleteLater();
                 return;
             }
 
@@ -103,21 +105,30 @@ void ClientConnection::reayRead()
     }
 }
 
+
 void ClientConnection::sendResponse()
 {
     QString content;
     content += "<h1>Hello!</h1>";
     content += "<h1>How Are You</h1>";
     content += "<h1>How Dumb you are?</h1>";
-    // content += "<table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>";
-    // for(auto itr = m_request.headers.begin(); itr != m_request.headers.end(); itr++)
-    //     content += QString("<tr><td>%0</td><td>%1</td></tr>")
-    //                    .arg(itr.key().toHtmlEscaped(), itr.value().toHtmlEscaped());
-    // content += "</tbody></table>";
-    // content += "<form method =\"post\">"
-    //            "<input type = \"text\" />"
-    //            "<button type=\"submit\">SEND</button>"
-    //            "</form>";
+    content += QString("<p>Method: %0 Path: %1 Protocol: %2</p>").arg(m_request.method.toHtmlEscaped(),
+               m_request.path.toHtmlEscaped(), m_request.protocol.toHtmlEscaped());
+    content += "<h2>Headers:</h2>";
+    content += "<table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>";
+    for(auto itr = m_request.headers.begin(); itr != m_request.headers.end(); itr++)
+        content += QString("<tr><td>%0</td><td>%1</td></tr>")
+                       .arg(itr.key().toHtmlEscaped(), itr.value().toHtmlEscaped());
+    content += "</tbody></table>";
+    if(!m_request.body.isEmpty())
+    {
+        content += "<h2>Request-Body</h2>";
+        content += "<pre>" + QString::fromUtf8(m_request.body).toHtmlEscaped()+ "</pre>";
+    }
+    content += "<form method=\"post\">"
+               "<input name=\"name\" type = \"text\" />"
+               "<button type=\"submit\">SEND</button>"
+               "</form>";
 
     const auto encoded = content.toUtf8();
 
@@ -130,6 +141,7 @@ void ClientConnection::sendResponse()
     m_state = ConnectionState::RequestLine;
     m_request = {}; // Reset request
 }
+
 
 // void ClientConnection::sendResponse()
 // {

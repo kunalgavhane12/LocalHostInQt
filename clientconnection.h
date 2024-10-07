@@ -4,6 +4,11 @@
 #include <memory>
 #include <QMap>
 #include <QByteArray>
+#include <QScreen>
+#include <QGuiApplication>
+#include <QImage>
+#include <QBuffer>
+#include <QPixmap>
 
 class QTcpSocket;
 
@@ -11,7 +16,7 @@ class ClientConnection : public QObject
 {
     Q_OBJECT
 public:
-    explicit ClientConnection(QTcpSocket *socket,QObject *parent = nullptr);
+    explicit ClientConnection(QTcpSocket *socket, QObject *parent = nullptr);
     ~ClientConnection() override;
 
 private slots:
